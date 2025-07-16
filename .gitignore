@@ -39,3 +39,9 @@
 
 # debug information files
 *.dwo
+
+# Third-Party Libraries
+third-party/*
+
+# Builds
+build/*

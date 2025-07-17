@@ -4,61 +4,99 @@
 #include "theme_assets.hpp"
 #include "tab.cpp"
 #include "controls.cpp"
+#include <functional>
+#include <vector>
+struct UIButton
+{
+    SDL_Rect rect;
+    std::string label;
+    std::function<void()> onClick;
+};
 
-extern SDL_Renderer* renderer;
-extern void SetCEFURL(const std::string& url); // function from cef_wrapper.cpp
+// Declare the buttons vector to store UI buttons
+std::vector<UIButton> buttons;
 
-void DrawRect(int x, int y, int w, int h, SDL_Color color) {
+extern SDL_Renderer *renderer;
+extern void SetCEFURL(const std::string &url); // function from cef_wrapper.cpp
+
+void DrawRect(int x, int y, int w, int h, SDL_Color color)
+{
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    SDL_Rect rect = {x, y, w, h};
+    SDL_FRect rect = {static_cast<float>(x), static_cast<float>(y), static_cast<float>(w), static_cast<float>(h)};
     SDL_RenderFillRect(renderer, &rect);
 }
 
-void RenderTopBar() {
+void RenderTopBar()
+{
     int height = 50;
     DrawRect(0, 0, 800, height, CurrentTheme.accent);
-    RenderTopBarText();
+    // RenderTopBarText(); // Function not defined, comment out or implement as needed
 }
 
-void RenderBottomNav() {
+void RenderBottomNav()
+{
     int height = 60;
     DrawRect(0, 540, 800, height, CurrentTheme.background);
     RenderBottomNavText();
 }
 
-void RenderTabs() {
+void RenderTabs()
+{
     const int tabHeight = 30;
     const int tabWidth = 150;
-    int y = 50;
+    const int closeSize = 24; // Width for the [X] button
+    const int y = 50;
     int x = 0;
 
-    const auto& tabs = GetTabs();
+    const auto &tabs = GetTabs();
     int active = GetActiveTabIndex();
 
-    for (size_t i = 0; i < tabs.size(); ++i) {
-        SDL_Color color = (i == active) ? CurrentTheme.accent : CurrentTheme.foreground;
-        DrawRect(x, y, tabWidth, tabHeight, color);
-        DrawText("Tab " + std::to_string(i+1), x + 8, y + 8, CurrentTheme.background);
+    for (size_t i = 0; i < tabs.size(); ++i)
+    {
+        bool isActive = (i == active);
+        SDL_Color tabColor = isActive ? CurrentTheme.accent : CurrentTheme.foreground;
+        SDL_Color textColor = isActive ? CurrentTheme.background : CurrentTheme.background;
 
-        buttons.push_back({ {x, y, tabWidth, tabHeight}, "Tab " + std::to_string(i+1), [i]() {
+        // Draw tab background
+        DrawRect(x, y, tabWidth, tabHeight, tabColor);
+
+        // Draw tab label
+        std::string label = "Tab " + std::to_string(i + 1);
+        DrawText(label, x + 8, y + 6, textColor);
+
+        // Tab click area (excluding [X])
+        UIButton tabButton;
+        tabButton.rect.x = x;
+        tabButton.rect.y = y;
+        tabButton.rect.w = tabWidth - closeSize;
+        tabButton.rect.h = tabHeight;
+        tabButton.label = "Tab" + std::to_string(i);
+        tabButton.onClick = [i]()
+        {
             SwitchToTab(i);
-            const Tab* tab = GetActiveTab();
-            if (tab) SetCEFURL(tab->url);
-        }});
+            const Tab *tab = GetActiveTab();
+            if (tab)
+                SetCEFURL(tab->url);
+        };
+        buttons.push_back(tabButton);
 
-        x += tabWidth;
+        // Draw close button
+        // Close button event
+        UIButton closeButton;
+        closeButton.rect.x = x + tabWidth - closeSize;
+        closeButton.rect.y = y;
+        closeButton.rect.w = closeSize;
+        closeButton.rect.h = tabHeight;
+        closeButton.label = "Close" + std::to_string(i);
+        closeButton.onClick = [i]()
+        {
+            CloseTab(i);
+            const Tab *tab = GetActiveTab();
+            if (tab)
+                SetCEFURL(tab->url);
+        };
+        buttons.push_back(UIButton(closeButton));
     }
-}
 
-void RenderCenterContent() {
-    DrawRect(0, 80, 800, 460, CurrentTheme.background);
-    const Tab* tab = GetActiveTab();
-    if (tab) DrawText(tab->url, 16, 100, CurrentTheme.foreground);
-}
-
-void RenderUILayout() {
-    RenderTopBar();
-    RenderTabs();
-    RenderCenterContent();
-    RenderBottomNav();
+    x += tabWidth;
 }

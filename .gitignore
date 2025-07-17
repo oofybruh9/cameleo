@@ -41,7 +41,7 @@
 *.dwo
 
 # Third-Party Libraries
-third-party/*
+third_party/*
 
 # Builds
 build/*

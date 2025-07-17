@@ -45,3 +45,4 @@ third_party/*
 
 # Builds
 build/*
+CMakeFiles/*

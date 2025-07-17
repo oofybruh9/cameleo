@@ -5,19 +5,21 @@ project(CameleoBrowser)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include(${CMAKE_SOURCE_DIR}/cmake/PlatformCEFConfig.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/cefConf.cmake)
 
 # SDL3
 find_package(SDL3 REQUIRED CONFIG)
+find_package(SDL3_ttf REQUIRED CONFIG)
 
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 include_directories(include)
+include_directories(${CMAKE_SOURCE_DIR}/src/)
 
 # App Source
 add_executable(cameleo ${SRC_FILES})
 
 # Link libraries
-target_link_libraries(cameleo PRIVATE SDL3::SDL3 ${CEF_LIBS})
+
 
 # Install target with minimal CEF runtime
 install(TARGETS cameleo RUNTIME DESTINATION .)
@@ -42,6 +44,5 @@ install(DIRECTORY ${CEF_BINARY_DIR}/locales/
 target_link_libraries(cameleo
     SDL3::SDL3
     SDL3_ttf::SDL3_ttf
-    cef
-    cef_dll_wrapper
+    ${CEF_LIBS}
 )

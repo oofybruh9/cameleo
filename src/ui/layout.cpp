@@ -4,17 +4,15 @@
 #include "theme_assets.hpp"
 #include "tab.cpp"
 #include "controls.cpp"
-#include <functional>
 #include <vector>
-struct UIButton
-{
-    SDL_Rect rect;
-    std::string label;
-    std::function<void()> onClick;
-};
 
 // Declare the buttons vector to store UI buttons
+#include <functional>
+
 std::vector<UIButton> buttons;
+std::string title;
+std::function<void()> onClick; // ✅ allows any lambda
+std::function<void()> onClose; // ✅ for close button
 
 extern SDL_Renderer *renderer;
 extern void SetCEFURL(const std::string &url); // function from cef_wrapper.cpp

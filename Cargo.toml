@@ -7,3 +7,6 @@ edition = "2021"
 sdl3 = "0.14.36"
 web-view = "0.7"
 raw-window-handle = "0.5"
+rusttype = "0.9"        # or latest SDL3 crate
+image = "0.24"
+

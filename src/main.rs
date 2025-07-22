@@ -1,28 +1,27 @@
-mod platform;
+mod layout;
+mod tab;
+mod theme;
 
-use sdl3::{event::Event, keyboard::Keycode, video::Window, EventPump};
-use std::time::Duration;
-use platform::embed_webview;
+use sdl3::event::Event;
+use sdl3::keyboard::Keycode;
+use tab::TabManager;
+use theme::LIGHT_THEME;
 
-struct Tab {
-    url: String,
-}
-
-fn main() {
-    let sdl = sdl3::init().unwrap();
-    let video = sdl.video().unwrap();
+fn main() -> Result<(), String> {
+    let sdl = sdl3::init()?;
+    let video = sdl.video()?;
     let window = video
-        .window("Cameleo Browser", 800, 600)
+        .window("Cameleo", 800, 600)
         .position_centered()
         .resizable()
-        .build()
-        .unwrap();
+        .build()?;
+    let mut canvas = window.into_canvas().build()?;
 
-    let mut tabs = vec![Tab { url: "https://example.com".to_string() }];
-    let mut active_tab = 0;
+    let ttf_ctx = Sdl3Ttf::init()?;
+    let font = ttf_ctx.load_font("assets/Roboto-Regular.ttf", 16)?;
 
-    let mut event_pump = sdl.event_pump().unwrap();
-    embed_webview(&window, &tabs[active_tab].url);
+    let mut tab_manager = TabManager::new();
+    let mut event_pump = sdl.event_pump()?;
 
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -30,18 +29,18 @@ fn main() {
                 Event::Quit { .. }
                 | Event::KeyDown {
                     keycode: Some(Keycode::Escape),
-                    .. 
-                } => break 'running,
-                Event::KeyDown {
-                    keycode: Some(Keycode::Tab),
                     ..
-                } => {
-                    active_tab = (active_tab + 1) % tabs.len();
-                    embed_webview(&window, &tabs[active_tab].url);
-                }
+                } => break 'running,
                 _ => {}
             }
         }
-        std::thread::sleep(Duration::from_millis(16));
+
+        canvas.set_draw_color(LIGHT_THEME.background);
+        canvas.clear();
+
+        layout::draw_ui(&mut canvas, &font, LIGHT_THEME, &tab_manager);
+        canvas.present();
     }
+
+    Ok(())
 }

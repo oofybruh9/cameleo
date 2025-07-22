@@ -1,1 +1,0 @@
-# Android NDK CMake config

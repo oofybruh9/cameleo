@@ -1,0 +1,9 @@
+[package]
+name = "cameleo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sdl3 = "0.1.3"
+webview = "0.7"
+raw-window-handle = "0.5"
